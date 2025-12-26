@@ -125,6 +125,18 @@ N8N_RUNNERS_BROKER_LISTEN_ADDRESS: 0.0.0.0
 N8N_RUNNERS_TASK_BROKER_URI: http://n8n:5679
 ```
 
+### Python Module Allowlist
+
+Python imports are restricted by default. The `n8n-task-runners.json` config file defines which modules are allowed:
+
+**Standard library allowed:**
+`sys`, `os`, `json`, `re`, `math`, `datetime`, `time`, `random`, `hashlib`, `base64`, `urllib`, `collections`, `itertools`, `functools`, `decimal`, `statistics`, `uuid`, `csv`, `io`, `pathlib`, `typing`, `dataclasses`, `enum`, `copy`, `operator`, `string`
+
+**External packages allowed:**
+`requests`, `pandas`, `numpy`, `dateutil`, `pytz`
+
+To modify the allowlist, edit `n8n-task-runners.json` and restart the runner containers.
+
 ### Verify runners are connected
 
 ```bash

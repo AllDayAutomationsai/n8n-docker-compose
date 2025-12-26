@@ -175,10 +175,8 @@ services:
       TZ: ${TZ:-America/New_York}
       N8N_RUNNERS_AUTH_TOKEN: ${N8N_RUNNERS_AUTH_TOKEN}
       N8N_RUNNERS_TASK_BROKER_URI: http://n8n:5679
-      # Python stdlib modules allowed
-      N8N_RUNNERS_STDLIB_ALLOW: sys,os,json,re,math,datetime,time,random,hashlib,base64,urllib,collections,itertools,functools,decimal,statistics,uuid,csv,io,pathlib,typing,dataclasses,enum,copy,operator,string
-      # Python external packages allowed (must be installed in runner image)
-      N8N_RUNNERS_EXTERNAL_ALLOW: requests,pandas,numpy,dateutil,pytz
+    volumes:
+      - ./n8n-task-runners.json:/etc/n8n-task-runners.json:ro
     depends_on:
       - n8n
     networks:
@@ -192,10 +190,8 @@ services:
       TZ: ${TZ:-America/New_York}
       N8N_RUNNERS_AUTH_TOKEN: ${N8N_RUNNERS_AUTH_TOKEN}
       N8N_RUNNERS_TASK_BROKER_URI: http://n8n-worker:5679
-      # Python stdlib modules allowed
-      N8N_RUNNERS_STDLIB_ALLOW: sys,os,json,re,math,datetime,time,random,hashlib,base64,urllib,collections,itertools,functools,decimal,statistics,uuid,csv,io,pathlib,typing,dataclasses,enum,copy,operator,string
-      # Python external packages allowed (must be installed in runner image)
-      N8N_RUNNERS_EXTERNAL_ALLOW: requests,pandas,numpy,dateutil,pytz
+    volumes:
+      - ./n8n-task-runners.json:/etc/n8n-task-runners.json:ro
     depends_on:
       - n8n-worker
     networks:
