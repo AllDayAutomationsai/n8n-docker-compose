@@ -7,16 +7,27 @@
 #   ./manage-python-modules.sh remove external <module>
 #   ./manage-python-modules.sh list
 #   ./manage-python-modules.sh reload
+#   ./manage-python-modules.sh backup
 
 set -e
 
 CONFIG_FILE="/root/n8n-server/compose/n8n-task-runners.json"
 COMPOSE_DIR="/root/n8n-server/compose"
+BACKUP_DIR="/root/n8n-server/compose/backups"
 
 # Colors
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
+
+backup_config() {
+    mkdir -p "$BACKUP_DIR"
+    local backup_file="$BACKUP_DIR/n8n-task-runners.$(date +%Y%m%d_%H%M%S).json"
+    cp "$CONFIG_FILE" "$backup_file"
+    # Keep only last 10 backups
+    ls -t "$BACKUP_DIR"/*.json 2>/dev/null | tail -n +11 | xargs -r rm
+    echo -e "${GREEN}Backup saved: $backup_file${NC}"
+}
 
 reload_runners() {
     echo -e "${YELLOW}Reloading runner containers...${NC}"
@@ -59,6 +70,9 @@ add_module() {
         return
     fi
 
+    # Backup before change
+    backup_config
+
     # Add module
     if [ -z "$current" ]; then
         new_value="$module"
@@ -88,6 +102,9 @@ remove_module() {
         exit 1
     fi
 
+    # Backup before change
+    backup_config
+
     # Get current modules and remove the specified one
     current=$(jq -r ".\"task-runners\"[] | select(.\"runner-type\"==\"python\") | .\"env-overrides\".\"$key\"" "$CONFIG_FILE")
     new_value=$(echo "$current" | tr ',' '\n' | grep -v "^${module}$" | tr '\n' ',' | sed 's/,$//')
@@ -113,8 +130,11 @@ case "$1" in
     reload)
         reload_runners
         ;;
+    backup)
+        backup_config
+        ;;
     *)
-        echo "Usage: $0 {add|remove|list|reload}"
+        echo "Usage: $0 {add|remove|list|reload|backup}"
         echo ""
         echo "Commands:"
         echo "  add stdlib <module>      Add a stdlib module"
@@ -123,6 +143,7 @@ case "$1" in
         echo "  remove external <module> Remove an external package"
         echo "  list                     List all allowed modules"
         echo "  reload                   Reload runner containers"
+        echo "  backup                   Create a backup of current config"
         exit 1
         ;;
 esac
