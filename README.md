@@ -135,7 +135,49 @@ Python imports are restricted by default. The `n8n-task-runners.json` config fil
 **External packages allowed:**
 `requests`, `pandas`, `numpy`, `dateutil`, `pytz`
 
-To modify the allowlist, edit `n8n-task-runners.json` and restart the runner containers.
+To modify the allowlist, use the management script:
+
+```bash
+# Add a stdlib module
+./scripts/manage-python-modules.sh add stdlib ssl
+
+# Add an external package
+./scripts/manage-python-modules.sh add external httpx
+
+# Remove a module
+./scripts/manage-python-modules.sh remove stdlib ssl
+
+# List all allowed modules
+./scripts/manage-python-modules.sh list
+```
+
+The script automatically restarts the runner containers after changes.
+
+**Optional: Auto-reload on file changes**
+
+For automatic reload when the config file is edited directly:
+
+```bash
+# Install inotify-tools
+apt install -y inotify-tools
+
+# Create systemd service
+cat > /etc/systemd/system/n8n-runner-watcher.service << 'EOF'
+[Unit]
+Description=n8n Task Runner Config Watcher
+After=docker.service
+
+[Service]
+Type=simple
+ExecStart=/bin/bash -c 'while true; do inotifywait -e modify,create /path/to/n8n-task-runners.json && sleep 2 && docker compose -f /path/to/docker-compose.yml restart n8n-runners n8n-worker-runners; done'
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl enable --now n8n-runner-watcher
+```
 
 ### Verify runners are connected
 
